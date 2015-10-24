@@ -1,6 +1,6 @@
 [submodule "compiler-plugin-unit-test-lib"]
 	path = compiler-plugin-unit-test-lib
-	url = git@github.com:CANVE/compiler-plugin-unit-test-lib.git
+	url = ../compiler-plugin-unit-test-lib.git
 [submodule "simple-graph"]
 	path = simple-graph
-	url = git@github.com:CANVE/simple-graph.git
+	url = ../simple-graph.git
