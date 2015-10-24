@@ -1,4 +1,5 @@
-Extracts and normalizes the type relationships and call graph of scala sbt projects.
+Extracts and normalizes the type relationships and call graph of scala sbt projects, through an sbt plugin 
+which injects a compiler plugin and normalizes data across projects.
 
 ### development notes:
 
