@@ -21,10 +21,10 @@ git submodule foreach --recursive git pull
 
 <br>
 
-#Maintaining the inventory of test projects
+##Maintaining the inventory of test projects
 Okay, so you want to add or remove a test project to the list.
 
-###Adding a publicly available project as a test project
+####Adding a publicly available project as a test project
 
 1. Make sure the project you are going to add is adequately licensed.
 
@@ -34,12 +34,14 @@ Okay, so you want to add or remove a test project to the list.
     ```
     git submodule add git@github.com:allenai/pipeline.git src/main/resources/test-projects/pipeline
     ```
+
 <br>
-###Removing a test project from the repo
+
+####Removing a test project from the repo
 
 TBD
 <br>
-###Ad-hoc manipulation
+####Ad-hoc manipulation
 
 You can add and remove projects as fits your situation - anything you drop into the directory will be treated as a test project. This won't magically update the repo, nor keep the submodule registration in sync! so to avoid trouble, TBD...
 
