@@ -11,7 +11,7 @@ object Plugin extends AutoPlugin {
   
   override def requires = plugins.JvmPlugin
   override def trigger = allRequirements
-  
+
   val compilerPluginOrg = "canve"
   val compilerPluginVersion = "0.0.1"
   val compilerPluginArtifact = "compiler-plugin"
@@ -25,14 +25,19 @@ object Plugin extends AutoPlugin {
   //val canveCommand: Command = Command(sbtCommandName)(){ ()}
 
   // global settings needed for the bootstrap
+
+
   override lazy val projectSettings = Seq(
+
+    addCompilerPlugin(compilerPluginOrg %% compilerPluginArtifact % compilerPluginVersion % "provided"),
+
     commands += Command.command(sbtCommandName,
                                 "Instruments all projects in the current build definition such that they run canve during compilation",
                                 "Instrument all projects in the current build definition such that they run canve during compilation")
-                                (go()),
+                                (go())
 
-    libraryDependencies += compilerPluginOrg % (compilerPluginArtifact + "_" + scalaBinaryVersion.value) % compilerPluginVersion % "provided"
-    
+    //libraryDependencies += compilerPluginOrg % (compilerPluginArtifact + "_" + scalaBinaryVersion.value) % compilerPluginVersion % "provided"
+
   )
 
   private def go(): State => State = { state =>
@@ -42,28 +47,25 @@ object Plugin extends AutoPlugin {
     val extracted: Extracted = Project.extract(state)
 
     val newSettings: Seq[Def.Setting[Task[Seq[String]]]] = extracted.structure.allProjectRefs map { projRef =>
+
       val projectName = projRef.project
-      //println("canve instrumenting project " + projectName)
-      
+
       lazy val pluginScalacOptions: Def.Initialize[Task[Seq[String]]] = Def.task {
-        // search for the compiler plugin
-        val deps: Seq[File] = update.value matching configurationFilter("provided")
-        deps.find(_.getAbsolutePath.contains(compilerPluginArtifact)) match {
-          case None => throw new Exception(s"Fatal: compilerPluginArtifact not in libraryDependencies")
-          case Some(pluginPath) => 
-            Seq(
-                
-              Some(s"-Yrangepos"),                                             // enables obtaining accurate source ranges in the compiler plugin
-                                                                               // but will crash with some scala 2.10 projects using macros (c.f. https://github.com/scoverage/scalac-scoverage-plugin/blob/master/2.10.md)
-              Some(s"-Xplugin:${pluginPath.getAbsolutePath}"),                 // hooks in the compiler plugin
-              
-              Some(s"-P:$compilerPluginNameProperty:projectName:$projectName") // passes the project name
-              
-            ).flatten
-        }
+        Seq(
+
+          // passes the project name
+          Some(s"-P:$compilerPluginNameProperty:projectName:$projectName"),
+
+          // enables obtaining accurate source ranges in the compiler plugin
+          // but will crash with some scala 2.10 projects using macros (c.f. https://github.com/scoverage/scalac-scoverage-plugin/blob/master/2.10.md)
+          Some(s"-Yrangepos")
+
+        ).flatten
+
       }
       scalacOptions in projRef ++= pluginScalacOptions.value
     }
+
     val appendedState = extracted.append(newSettings, state)
 
     val structure = extracted.structure
@@ -98,5 +100,5 @@ object Plugin extends AutoPlugin {
     }
   }
   
-  println(s"[canve] sbt canve plugin loaded - enter the command `$sbtCommandName` in sbt, to run canve for your project")
+  println(s"[canve] sbt canve plugin loaded - enter `$sbtCommandName` in sbt, to run canve for your project")
 }

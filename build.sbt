@@ -2,16 +2,19 @@
  * Master build definition for CANVE data extraction.
  */
 
+enablePlugins(CrossPerProjectPlugin) // makes sbt recursively respect cross compilation subproject versions, 
+                                     // thus skipping compilation for versions that should not be compiled.
+                                     // (this is an sbt-doge global idiom)
+
 val integrationTest = taskKey[Unit]("Executes integration tests.")
 
 lazy val root = (project in file("."))
   .aggregate(simpleGraph, compilerPluginUnitTestLib, canveCompilerPlugin, canveSbtPlugin, sbtPluginTestLib)
-  .enablePlugins(CrossPerProjectPlugin)
   .settings(
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.4", "2.11.7"),
     publishArtifact := false, // no artifact to publish for the virtual root project
-    integrationTest := (run in Compile in sbtPluginTestLib).value // not working: need to bounty http://stackoverflow.com/questions/33291071/invoking-a-subprojects-main-with-a-custom-task
+    integrationTest := (run in Compile in sbtPluginTestLib).toTask("").value
   )
 
 /*
@@ -23,7 +26,7 @@ lazy val root = (project in file("."))
  * missing at compile time.
  */
 lazy val canveCompilerPlugin = (project in file("compiler-plugin"))
-  .dependsOn(simpleGraph, compilerPluginUnitTestLib)
+  .dependsOn(simpleGraph, compilerPluginUnitTestLib % "test")
   .settings(
     name := "compiler-plugin",
     organization := "canve",
@@ -32,7 +35,7 @@ lazy val canveCompilerPlugin = (project in file("compiler-plugin"))
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.4", "2.11.7"),
     resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
-    
+
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       "org.scala-lang" % "scala-library" % scalaVersion.value % "provided",
@@ -49,12 +52,14 @@ lazy val canveCompilerPlugin = (project in file("compiler-plugin"))
     /*
      * take care of including all non scala core library dependencies in the build artifact 
      */
+
     test in assembly := {},
+
     jarName in assembly := name.value + "_" + scalaVersion.value + "-" + version.value + "-assembly.jar",
     assemblyOption in assembly ~= { _.copy(includeScala = false) },
     packagedArtifact in Compile in packageBin := {
       val temp = (packagedArtifact in Compile in packageBin).value
-      println(temp)
+      //println(temp)
       val (art, slimJar) = temp
       val fatJar = new File(crossTarget.value + "/" + (jarName in assembly).value)
       val _ = assembly.value
@@ -84,7 +89,7 @@ lazy val canveSbtPlugin = (project in file("sbt-plugin"))
  * Integration testing module, that runs our sbt module on select projects
  */
 lazy val sbtPluginTestLib = (project in file("sbt-plugin-test-lib"))
-  .dependsOn(canveCompilerPlugin)
+  .dependsOn(canveCompilerPlugin) // TODO: This is currently just for a util object - we can do better.
   .settings(
     name := "sbt-plugin-test-lib",
     organization := "canve",
@@ -94,8 +99,7 @@ lazy val sbtPluginTestLib = (project in file("sbt-plugin-test-lib"))
      * this project is purely running sbt as an OS process, so it can use latest scala version not sbt's scala version,
      * and there is no need whatsoever to provided a cross-compilation of it for older scala.
      */
-    scalaVersion := "2.11.7", 
-    crossScalaVersions := Seq("2.11.7"),
+    scalaVersion := "2.10.4", 
     
     /*
      * The following resolver is added as a workaround: the `update task` of this subproject,
@@ -110,7 +114,9 @@ lazy val sbtPluginTestLib = (project in file("sbt-plugin-test-lib"))
     
     publishArtifact := false,
 
-    (run in Compile) <<= (run in Compile).dependsOn(publishLocal in canveSbtPlugin)
+    (run in Compile) <<= (run in Compile)
+      .dependsOn(publishLocal in canveSbtPlugin)
+      .dependsOn(publishLocal in canveCompilerPlugin)
   )
 
 /*
