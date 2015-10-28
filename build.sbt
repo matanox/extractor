@@ -2,7 +2,7 @@
  * Master build definition for CANVE data extraction.
  */
 
-enablePlugins(CrossPerProjectPlugin) // makes sbt recursively respect cross compilation subproject versions, 
+//enablePlugins(CrossPerProjectPlugin) // makes sbt recursively respect cross compilation subproject versions,
                                      // thus skipping compilation for versions that should not be compiled.
                                      // (this is an sbt-doge global idiom)
 
@@ -10,12 +10,13 @@ val integrationTest = taskKey[Unit]("Executes integration tests.")
 
 lazy val root = (project in file("."))
   .aggregate(simpleGraph, compilerPluginUnitTestLib, canveCompilerPlugin, canveSbtPlugin, sbtPluginTestLib)
+  .enablePlugins(CrossPerProjectPlugin)
   .settings(
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.4", "2.11.7"),
     publishArtifact := false, // no artifact to publish for the virtual root project
     integrationTest := (run in Compile in sbtPluginTestLib).toTask("").value
-  )
+)
 
 /*
  * The compiler plugin module. Note we cannot call it simply 
@@ -74,6 +75,7 @@ lazy val canveCompilerPlugin = (project in file("compiler-plugin"))
  */
 lazy val canveSbtPlugin = (project in file("sbt-plugin"))
   .dependsOn(canveCompilerPlugin)
+  .enablePlugins(CrossPerProjectPlugin)
   .settings(
     organization := "canve",
     name := "sbt-plugin",
@@ -99,7 +101,7 @@ lazy val sbtPluginTestLib = (project in file("sbt-plugin-test-lib"))
      * this project is purely running sbt as an OS process, so it can use latest scala version not sbt's scala version,
      * and there is no need whatsoever to provided a cross-compilation of it for older scala.
      */
-    scalaVersion := "2.10.4", 
+    scalaVersion := "2.11.7",
     
     /*
      * The following resolver is added as a workaround: the `update task` of this subproject,
