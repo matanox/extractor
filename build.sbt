@@ -2,15 +2,11 @@
  * Master build definition for CANVE data extraction.
  */
 
-//enablePlugins(CrossPerProjectPlugin) // makes sbt recursively respect cross compilation subproject versions,
-                                     // thus skipping compilation for versions that should not be compiled.
-                                     // (this is an sbt-doge global idiom)
-
 val integrationTest = taskKey[Unit]("Executes integration tests.")
 
 lazy val root = (project in file("."))
   .aggregate(simpleGraph, compilerPluginUnitTestLib, canveCompilerPlugin, canveSbtPlugin, sbtPluginTestLib)
-  .enablePlugins(CrossPerProjectPlugin)
+  .enablePlugins(CrossPerProjectPlugin) // makes sbt recursively respect cross compilation subproject versions, thus skipping compilation for versions that should not be compiled. (this is an sbt-doge global idiom).
   .settings(
     scalaVersion := "2.11.7",
     crossScalaVersions := Seq("2.10.4", "2.11.7"),
@@ -92,6 +88,7 @@ lazy val canveSbtPlugin = (project in file("sbt-plugin"))
  */
 lazy val sbtPluginTestLib = (project in file("sbt-plugin-test-lib"))
   .dependsOn(canveCompilerPlugin) // TODO: This is currently just for a util object - we can do better.
+  .enablePlugins(CrossPerProjectPlugin)
   .settings(
     name := "sbt-plugin-test-lib",
     organization := "canve",
