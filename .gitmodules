@@ -4,3 +4,6 @@
 [submodule "simple-graph"]
 	path = simple-graph
 	url = ../simple-graph.git
+[submodule "sbt-plugin-test-lib/src/main/resources/test-projects"]
+	path = sbt-plugin-test-lib/src/main/resources/test-projects
+	url = ../integration-test-projects.git
