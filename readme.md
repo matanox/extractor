@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/CANVE/extractor.svg?branch=master)](https://travis-ci.org/CANVE/extractor)
 
+#Note: 
+the official repo is now at https://github.com/CANVE and co-committers are welcome. Work will resume in few weeks/months.
+
 Extracts and normalizes the type relationships and call graph of scala sbt projects, through an sbt plugin which injects a compiler plugin and normalizes data across projects. Currently the project only publishes locally and you need to [drop us a line on gitter](https://gitter.im/CANVE/canve?utm_source=share-link&utm_medium=link&utm_campaign=share-link) to get the up-to-date getting started instructions.
 
 ### development notes:
@@ -11,4 +14,4 @@ After cloning, cd into the cloned directory and run `git submodule update --init
 This will pull in the _"pointed at"_ projects, and now you have the full project
 to work on locally.
 
-License: TBD
+License: Apache 2.0
